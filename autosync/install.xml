@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<extension>
+<id>AutoSync.0.1.0</id>
+        <name>PLUGIN_AUTOSYNC</name>
+        <module>Plugins::AutoSync::Plugin</module>
+        <version>0.1.0</version>
+        <description>PLUGIN_AUTOSYNC_DESC</description>
+        <creator>Mark Hässig</creator>
+        <email>mark.haessig@gmail.com</email>
+	<defaultState>enabled</defaultState>
+        <homepageURL>-</homepageURL>  
+	<type>2</type><!-- type=extension -->
+        <targetApplication><id>SlimServer</id>
+                <minVersion>7.3</minVersion>
+                <maxVersion>7.*</maxVersion>
+        </targetApplication>
+</extension>

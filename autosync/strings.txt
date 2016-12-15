@@ -1,0 +1,5 @@
+PLUGIN_AUTOSYNC
+	EN	AutoSync
+
+PLUGIN_AUTOSYNC_DESC
+	EN	Automatically sync newly started player if another player already plays music
