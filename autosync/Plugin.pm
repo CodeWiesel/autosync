@@ -26,14 +26,7 @@ my $log = Slim::Utils::Log->addLogCategory({
 	'description'  => getMyDisplayName(),
 });
 
-# prefs
-my $prefs = preferences('plugin.AutoSync');
-my $serverPrefs = preferences('server');
 my $syncMaster = undef;
-
-# ------------------------------ Settings --------------------------------
-my $defaultSyncAtPowerOn = 0;
-
 
 sub initPlugin {
 	# Subscribe to power events
@@ -55,28 +48,35 @@ sub playCallback {
 	my $client = $request->client() || return;
 	$log->debug("playCallback entered $client");
 	if(!defined $syncMaster){
-		$setMaster($client);
+		setNewMaster($client);
 	}
 	$log->debug("playCallback left");
 }
-sub setMaster($) {
-	my $client = shift;
-	$log->debug("setMaster entered $client");
-	if(Slim::Player::Sync::isMaster($client) || Slim::Player::Sync::isSlave($client)){
-		$client->controller()->unsync($client);
-	}
+sub setNewMaster {
+	my ( $client ) = @_;
+	$log->debug("setNewMaster entered $client");
+	disconnectPlayerIfConnected($client);
 	$syncMaster = $client;
-	$log->debug("setMaster left");
+	$log->debug("setNewMaster left");
+	return $syncMaster;
 }
 
-sub syncPlayer($) {
-	my $client = shift;
+sub syncPlayer {
+	my ( $client ) = @_;
 	$log->debug("syncPlayer entered $client");
+	disconnectPlayerIfConnected($client);
+	$syncMaster->controller()->sync($client, 1);
+	Slim::Player::Source::playmode($client, 'play', undef, undef, undef);
+	$log->debug("syncPlayer left");
+	return;
+}
+
+
+sub disconnectPlayerIfConnected {
+	my ( $client ) = @_;
 	if(Slim::Player::Sync::isMaster($client) || Slim::Player::Sync::isSlave($client)){
 		$client->controller()->unsync($client);
 	}
-	$syncMaster->controller()->sync($client, 1);
-	$log->debug("syncPlayer left");
 }
 
 sub powerCallback {
@@ -87,12 +87,14 @@ sub powerCallback {
 	$log->debug("Client Power State: $clientPower");
 	# check if client is running
 	if (! $clientPower ) {
+		disconnectPlayerIfConnected($client);
 		return;
 	}
 	if(defined $syncMaster){
 		syncPlayer($client);
 	}
 	$log->debug("powerCallback left");
+	return;
 }
 
 1;

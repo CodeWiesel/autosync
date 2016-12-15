@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
-
 <extension>
-<id>AutoSync.0.1.0</id>
+<id>AutoSync.0.2</id>
         <name>PLUGIN_AUTOSYNC</name>
         <module>Plugins::AutoSync::Plugin</module>
-        <version>0.1.0</version>
+        <version>0.2</version>
         <description>PLUGIN_AUTOSYNC_DESC</description>
         <creator>Mark Hässig</creator>
         <email>mark.haessig@gmail.com</email>
