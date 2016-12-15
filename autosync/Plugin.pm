@@ -67,7 +67,6 @@ sub syncPlayer {
 	$log->debug("syncPlayer entered $client");
 	disconnectPlayerIfConnected($client);
 	$syncMaster->controller()->sync($client, '1');
-	Slim::Player::Source::playmode($client, 'play', undef, undef, undef);
 	$log->debug("syncPlayer left");
 	return;
 }
@@ -92,7 +91,7 @@ sub powerCallback {
 	# check if client is running
 	if (! $clientPower ) {
 		if($client == $syncMaster) {
-			my @slaves = Slim::Player::Sync::slaves($master);
+			my @slaves = Slim::Player::Sync::slaves($client);
 			disconnectPlayerIfConnected($client);
 			# pass master on to next slave or power off all?
 			for my $slave (@slaves) {
