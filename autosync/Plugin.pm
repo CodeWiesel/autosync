@@ -17,12 +17,13 @@ use strict;
 
 use Slim::Utils::Log;
 use Slim::Control::Request;
+use Slim::Control::Jive;
 use Slim::Player::Sync;
 
 # create a logging object
 my $log = Slim::Utils::Log->addLogCategory({
 	'category'     => 'plugin.AutoSync',
-	'defaultLevel' => 'DEBUG',
+	'defaultLevel' => 'ERROR',
 	'description'  => getMyDisplayName(),
 });
 
@@ -65,7 +66,7 @@ sub syncPlayer {
 	my ( $client ) = @_;
 	$log->debug("syncPlayer entered $client");
 	disconnectPlayerIfConnected($client);
-	$syncMaster->controller()->sync($client, 1);
+	$syncMaster->controller()->sync($client, '1');
 	Slim::Player::Source::playmode($client, 'play', undef, undef, undef);
 	$log->debug("syncPlayer left");
 	return;
@@ -74,9 +75,12 @@ sub syncPlayer {
 
 sub disconnectPlayerIfConnected {
 	my ( $client ) = @_;
+	$log->debug("disconnectPlayerIfConnected entered $client");
 	if(Slim::Player::Sync::isMaster($client) || Slim::Player::Sync::isSlave($client)){
 		$client->controller()->unsync($client);
 	}
+	$log->debug("disconnectPlayerIfConnected left");
+	return;
 }
 
 sub powerCallback {
@@ -87,7 +91,18 @@ sub powerCallback {
 	$log->debug("Client Power State: $clientPower");
 	# check if client is running
 	if (! $clientPower ) {
-		disconnectPlayerIfConnected($client);
+		if($client == $syncMaster) {
+			my @slaves = Slim::Player::Sync::slaves($master);
+			disconnectPlayerIfConnected($client);
+			# pass master on to next slave or power off all?
+			for my $slave (@slaves) {
+				Slim::Control::Jive::playerPower($slave);
+			}
+		}
+		else{
+			disconnectPlayerIfConnected($client);
+		}
+		
 		return;
 	}
 	if(defined $syncMaster){
